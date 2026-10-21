@@ -6,7 +6,15 @@ drives a local [OpenCode](https://opencode.ai) session from your phone.
 ## Install
 
 ```bash
-brew install codereach/tap/codereach
+brew install cultivx/codereach/codereach
+```
+
+Homebrew names a formula in a tap `<owner>/<tap>/<formula>`, so the name
+repeats. You can also tap it yourself first and use the shorter form:
+
+```bash
+brew tap cultivx/codereach
+brew install codereach
 ```
 
 Then run it in a project folder:
@@ -17,6 +25,12 @@ codereach
 ```
 
 It prints a QR code. Scan it with the CodeReach app to pair your phone.
+
+> The formula is generated from the CLI's releases, so it points at the newest
+> one. The first release of the CLI is published from the
+> [main repository](https://github.com/CultivX/codereach); until that has
+> happened the formula here is a placeholder and the install will not find a
+> file to download.
 
 ## What you get
 
@@ -29,7 +43,7 @@ install script), that one is used instead.
 ## Updating
 
 ```bash
-brew upgrade codereach
+brew upgrade cultivx/codereach/codereach
 ```
 
 The formula is regenerated automatically when a new release is published, so
