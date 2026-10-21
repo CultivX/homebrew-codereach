@@ -1,0 +1,63 @@
+name: Bump the formula
+
+# Keeps the tap in step with the releases of the CLI.
+#
+# A Homebrew formula that points at an old version is worse than no formula:
+# `brew upgrade` would report "already installed" and the user would keep a
+# stale CLI without being told. So the formula is regenerated whenever a new
+# release appears.
+#
+# The schedule is a backstop. The main repository sends a `repository_dispatch`
+# when it publishes a release, which is the fast path.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to point at (default: the latest release)"
+        required: false
+        type: string
+  repository_dispatch:
+    types: [release-published]
+  schedule:
+    # Every six hours. The dispatch usually beats it.
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    name: Update the formula
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Update the formula
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.event.client_payload.tag || '' }}
+        run: |
+          set -euo pipefail
+          chmod +x bin/update-formula.sh
+          if [ -n "$TAG" ]; then
+            ./bin/update-formula.sh "$TAG"
+          else
+            ./bin/update-formula.sh
+          fi
+
+      - name: Commit
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- Formula/codereach.rb; then
+            echo "The formula is already up to date."
+            exit 0
+          fi
+          version=$(grep -o 'version "[^"]*"' Formula/codereach.rb | head -1 | cut -d'"' -f2)
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/codereach.rb
+          git commit -m "codereach ${version}"
+          git push
