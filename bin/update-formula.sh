@@ -41,7 +41,13 @@ sha_for() {
   platform="$1"
   file="codereach-${version}-${platform}.tar.gz"
   url="https://github.com/${REPO}/releases/download/${tag}/${file}"
-  curl -fsSL "$url" -o "$WORK/$file"
+  if ! curl -fsSL "$url" -o "$WORK/$file"; then
+    echo "Could not download $file from the release." >&2
+    echo "The release assets of a private repository are not downloadable by the public," >&2
+    echo "and a Homebrew formula cannot fetch them with a credential." >&2
+    echo "Either make $REPO public, or host the binaries somewhere public." >&2
+    exit 1
+  fi
   if command -v sha256sum >/dev/null 2>&1; then
     sha256sum "$WORK/$file" | awk '{print $1}'
   else
