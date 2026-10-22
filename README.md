@@ -58,7 +58,7 @@ It works out how it was installed and runs the right command.
 ## Other ways to install
 
 ```bash
-npx codereach                                    # from npm, no install
+npx @cultivx/codereach                                  # from npm, no install
 curl -fsSL https://codereach.cultivx.com.au/install.sh | sh
 ```
 

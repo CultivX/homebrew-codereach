@@ -13,7 +13,7 @@
 set -euo pipefail
 
 REPO="CultivX/codereach"
-PACKAGE="codereach"
+PACKAGE="@cultivx/codereach"
 FORMULA="Formula/codereach.rb"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
