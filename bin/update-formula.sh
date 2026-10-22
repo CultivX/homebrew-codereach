@@ -4,16 +4,30 @@
 # The formula is generated rather than edited, so a new release is a matter of
 # running this: the version comes from the release tag and the checksums come
 # from the tarballs themselves.
+#
+# The version is looked up in the npm registry rather than in the releases API.
+# The registry is public and holds the same version number, and it can be read
+# without a token: the repository itself is private, so the releases API needs
+# a credential this tap does not have, and asking for one that can read a
+# private repository would be a strange thing for a tap to need.
 set -euo pipefail
 
 REPO="CultivX/codereach"
+PACKAGE="codereach"
 FORMULA="Formula/codereach.rb"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 tag="${1:-}"
 if [ -z "$tag" ]; then
-  tag="$(gh api "repos/${REPO}/releases/latest" --jq .tag_name)"
+  version="$(npm view "${PACKAGE}" version 2>/dev/null || true)"
+  if [ -n "$version" ]; then
+    tag="agent-v${version}"
+  else
+    # The package is not on npm yet, so there is no version to read. Fall back
+    # to the releases, which needs a token with read access to the repository.
+    tag="$(gh api "repos/${REPO}/releases" --jq '[.[] | select(.tag_name | startswith("agent-v"))][0].tag_name')"
+  fi
 fi
 version="${tag#agent-v}"
 if [ "$version" = "$tag" ]; then
